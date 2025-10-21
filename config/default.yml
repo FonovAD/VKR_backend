@@ -1,0 +1,11 @@
+postgres:
+  database: nir
+  user: aleksandr
+  password: ""
+  host: localhost
+  port: "5432"
+  retries: 3
+  pool_size: 10
+  ssl_mode: disable
+
+port: "8081"

@@ -1,6 +1,6 @@
 CREATE TABLE organization
 (
-    id           INTEGER      NOT NULL UNIQUE,
+    id           SERIAL      NOT NULL UNIQUE,
     inn          VARCHAR(12)  NOT NULL UNIQUE,
     name         VARCHAR(250) NOT NULL UNIQUE,
     exist_museum BOOLEAN DEFAULT FALSE
