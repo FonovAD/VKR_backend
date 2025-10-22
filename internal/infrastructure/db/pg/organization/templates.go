@@ -3,7 +3,7 @@ package organization
 const (
 	createOrganizationQuery = `
 		INSERT INTO organization (inn, name, exist_museum)
-		VALUES (:inn, :name, :exist_museum)
+		VALUES ($1, $2, $3)
 		RETURNING id`
 
 	getOrganizationByIDQuery = `

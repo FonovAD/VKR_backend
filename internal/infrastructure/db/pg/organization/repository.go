@@ -38,22 +38,12 @@ func (r *organizationRepository) Create(ctx context.Context, org *entity.Organiz
 		Name:        org.Name,
 		ExistMuseum: org.ExistMuseum,
 	}
-
-	rows, err := r.db.NamedQueryContext(ctx, createOrganizationQuery, dbModel)
+	fmt.Print(dbModel)
+	var id int
+	err := r.db.QueryRowxContext(ctx, createOrganizationQuery, dbModel.INN, dbModel.Name, dbModel.ExistMuseum).Scan(&id)
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
-
-	var id int
-	if rows.Next() {
-		if err := rows.Scan(&id); err != nil {
-			return err
-		}
-	} else {
-		return errors.New("no ID returned")
-	}
-
 	org.ID = entity.OrganizationID(id)
 	return nil
 }

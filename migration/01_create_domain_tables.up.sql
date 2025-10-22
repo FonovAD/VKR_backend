@@ -1,6 +1,6 @@
 CREATE TABLE organization
 (
-    id           SERIAL      NOT NULL UNIQUE,
+    id           SERIAL PRIMARY KEY ,
     inn          VARCHAR(12)  NOT NULL UNIQUE,
     name         VARCHAR(250) NOT NULL UNIQUE,
     exist_museum BOOLEAN DEFAULT FALSE
@@ -9,11 +9,12 @@ CREATE TABLE organization
 CREATE TABLE museum
 (
     id_owner                            INTEGER      NOT NULL REFERENCES organization (id),
-    inn                                 VARCHAR(12)  NOT NULL,
+    id                                  SERIAL,
+    inn                                 VARCHAR(12),
     kpp                                 TEXT,
     founder                             TEXT,
     museum_activity_in_charter          BOOLEAN DEFAULT FALSE,
-    name                                VARCHAR(250) NOT NULL,
+    name                                VARCHAR(300) NOT NULL,
     museum_legal_status                 TEXT,
     is_memorial_reserve_museum          BOOLEAN DEFAULT FALSE,
     is_historical_memorial_reserve      BOOLEAN DEFAULT FALSE,
@@ -44,7 +45,7 @@ CREATE TABLE labor_resource
 
 CREATE TABLE labor_resource_fot
 (
-    labor_resources_id              INTEGER REFERENCES labor_resources (id),
+    labor_resources_id              INTEGER REFERENCES labor_resource (id),
     total_staff_annual              DECIMAL(12, 2),
     research_staff_internal         DECIMAL(12, 2),
     core_operational_staff_internal DECIMAL(12, 2),
@@ -72,15 +73,15 @@ CREATE TABLE metric
 CREATE TABLE activity_record
 (
     id          SERIAL PRIMARY KEY,
-    activity_id INTEGER NOT NULL REFERENCES activities (id) ON DELETE CASCADE,
-    metric_id   INTEGER NOT NULL REFERENCES metrics (id) ON DELETE CASCADE,
+    activity_id INTEGER NOT NULL REFERENCES activity (id) ON DELETE CASCADE,
+    metric_id   INTEGER NOT NULL REFERENCES metric (id) ON DELETE CASCADE,
     cost_share  DECIMAL(5, 2)
 );
 
 CREATE TABLE funding_source
 (
     id                      SERIAL PRIMARY KEY,
-    record_id               INTEGER NOT NULL REFERENCES activity_records (id) ON DELETE CASCADE,
+    record_id               INTEGER NOT NULL REFERENCES activity_record (id) ON DELETE CASCADE,
     revenue                 DECIMAL(15, 2),
     total_volume            INTEGER,
     state_assignment_volume INTEGER,

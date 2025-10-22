@@ -2,6 +2,7 @@ package model
 
 type Museum struct {
 	IDOwner                          int     `db:"id_owner"`
+	Id                               int     `db:"id"`
 	INN                              string  `db:"inn"`
 	KPP                              *string `db:"kpp"`
 	Founder                          *string `db:"founder"`

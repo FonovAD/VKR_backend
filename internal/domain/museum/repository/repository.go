@@ -5,7 +5,7 @@ import (
 	"vkr/internal/domain/entity"
 )
 
-type MuseumRepository interface {
+type Repository interface {
 	Create(ctx context.Context, museum *entity.Museum) error
 	GetByID(ctx context.Context, id entity.MuseumID) (*entity.Museum, error)
 	Update(ctx context.Context, museum *entity.Museum) error

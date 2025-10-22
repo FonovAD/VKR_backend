@@ -4,6 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"vkr/internal/logger"
 	"vkr/internal/presenter/http/handler"
+	"vkr/internal/presenter/http/handler/museum"
 	"vkr/internal/presenter/http/handler/organisation"
 )
 
@@ -22,10 +23,12 @@ func NewInteractor(conn *sqlx.DB, logger logger.Logger) Interactor {
 
 type appHandler struct {
 	organisation.OrganizationHandler
+	museum.MuseumHandler
 }
 
 func (i *interactor) NewAppHandler() handler.AppHandler {
-	appHandler := &appHandler{}
-	appHandler.OrganizationHandler = i.NewOrganizationHandler()
-	return appHandler
+	return &appHandler{
+		OrganizationHandler: i.NewOrganizationHandler(),
+		MuseumHandler:       i.NewMuseumHandler(),
+	}
 }
