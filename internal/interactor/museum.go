@@ -13,8 +13,6 @@ func (i *interactor) NewMuseumRepository() museumRepoInterface.Repository {
 }
 
 func (i *interactor) NewMuseumService() museumService.Service {
-	// Если у вас пока нет реализации сервиса — можно вернуть заглушку или пустую структуру
-	// Например: return &museumService.MuseumService{}
 	return *museumService.NewService()
 }
 

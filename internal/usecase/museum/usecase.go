@@ -8,7 +8,6 @@ import (
 	museumService "vkr/internal/domain/museum/service"
 )
 
-// UseCase определяет контракт для бизнес-логики музеев
 type UseCase interface {
 	Create(ctx context.Context, museum *entity.Museum) (*entity.Museum, error)
 	GetByID(ctx context.Context, id entity.MuseumID) (*entity.Museum, error)
@@ -21,7 +20,7 @@ type UseCase interface {
 
 type museumUseCase struct {
 	repo    museumRepo.Repository
-	service museumService.Service // может использоваться позже для валидации и т.п.
+	service museumService.Service
 }
 
 func NewMuseumUseCase(repo museumRepo.Repository, service museumService.Service) UseCase {

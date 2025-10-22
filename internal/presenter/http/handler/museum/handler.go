@@ -10,7 +10,6 @@ import (
 	"vkr/internal/usecase/museum"
 )
 
-// Ошибки
 var (
 	ErrInternalServer = &InternalServerErrorResponse{ErrorMsg: "internal server error"}
 )

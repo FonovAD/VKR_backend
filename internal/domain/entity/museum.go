@@ -3,7 +3,7 @@ package entity
 type MuseumID int
 
 type Museum struct {
-	IdOwner                          OrganizationID // ссылка на Organization
+	IdOwner                          OrganizationID
 	Id                               MuseumID
 	INN                              string
 	KPP                              *string

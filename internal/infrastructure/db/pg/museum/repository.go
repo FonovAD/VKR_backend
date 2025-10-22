@@ -131,5 +131,3 @@ func (r *museumRepository) List(ctx context.Context) ([]*entity.Museum, error) {
 	}
 	return entities, nil
 }
-
-// Вспомогательные функции преобразования

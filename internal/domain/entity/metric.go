@@ -3,5 +3,5 @@ package entity
 type Metric struct {
 	ID           int
 	Name         string
-	AudienceType AudienceType // enum: internal, external, all
+	AudienceType AudienceType
 }

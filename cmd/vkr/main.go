@@ -19,12 +19,11 @@ import (
 	_ "github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 
-	"vkr/internal/infrastructure/db/pg" // ← путь к твоему pg-пакету
+	"vkr/internal/infrastructure/db/pg"
 	"vkr/internal/interactor"
 	"vkr/internal/presenter/http/router"
 )
 
-// Config — корневая структура конфигурации приложения
 type Config struct {
 	Postgres pg.PGConfig `yaml:"postgres"`
 	Port     string      `yaml:"port" required:"true"`
