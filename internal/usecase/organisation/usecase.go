@@ -19,10 +19,10 @@ type UseCase interface {
 
 type organizationUseCase struct {
 	orgRepo    orgRepo.Repository
-	orgService orgService.OrganizationService
+	orgService orgService.Service
 }
 
-func NewOrganizationUseCase(orgRepo orgRepo.Repository, orgService orgService.OrganizationService) UseCase {
+func NewOrganizationUseCase(orgRepo orgRepo.Repository, orgService orgService.Service) UseCase {
 	return &organizationUseCase{
 		orgRepo:    orgRepo,
 		orgService: orgService,

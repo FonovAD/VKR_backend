@@ -12,8 +12,8 @@ func (i *interactor) NewOrganisationRepository() orgRepoInterface.Repository {
 	return orgStorage.NewOrganizationRepository(i.conn, i.logger)
 }
 
-func (i *interactor) NewOrganizationService() orgService.OrganizationService {
-	return orgService.NewStudentService()
+func (i *interactor) NewOrganizationService() orgService.Service {
+	return orgService.NewOrganizationService()
 }
 
 func (i *interactor) NewOrganizationUseCase() orgUseCase.UseCase {

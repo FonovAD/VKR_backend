@@ -1,6 +1,6 @@
 CREATE TABLE organization
 (
-    id           SERIAL PRIMARY KEY ,
+    id           SERIAL PRIMARY KEY,
     inn          VARCHAR(12)  NOT NULL UNIQUE,
     name         VARCHAR(250) NOT NULL UNIQUE,
     exist_museum BOOLEAN DEFAULT FALSE
@@ -55,38 +55,47 @@ CREATE TABLE labor_resource_fot
     admin_support_staff_external    DECIMAL(12, 2)
 );
 
-CREATE TABLE activity
+CREATE TABLE activity_types
 (
-    id            SERIAL PRIMARY KEY,
-    name          VARCHAR(500) NOT NULL UNIQUE,
-    location_type VARCHAR(50) CHECK (location_type IN ('internal', 'external', 'online'))
+    id               INTEGER PRIMARY KEY,
+    name             TEXT NOT NULL,
+    volume_indicator TEXT NOT NULL -- Описание показателя объема
 );
 
-CREATE TABLE metric
+INSERT INTO activity_types (id, name, volume_indicator)
+VALUES (1,
+        'Обеспечение доступа граждан к музейным предметам и музейным коллекциям путем создания экспозиций (выставок) (в стационарных условиях)',
+        'Количество экспозиций (выставок)'),
+       (2,
+        'Обеспечение доступа граждан к музейным предметам и музейным коллекциям путем создания экспозиций (выставок) (вне стационара)',
+        'Количество экспозиций (выставок)'),
+       (3, 'Комплектование, учет, обеспечение безопасности и сохранности музейных предметов и музейных коллекций',
+        'Количество музейных предметов и музейных коллекций'),
+       (4, 'Проведение реставрационных работ в отношении музейных предметов и музейных коллекций',
+        'Количество предметов'),
+       (5, 'Публичный показ музейных предметов, музейных коллекций (в стационарных условиях)',
+        'Количество посетителей'),
+       (6, 'Публичный показ музейных предметов, музейных коллекций (вне стационара)', 'Количество посетителей'),
+       (7, 'Публичный показ музейных предметов, музейных коллекций (удаленно через интернет)',
+        'Количество посетителей');
+)
+
+CREATE TABLE museum_activities
 (
-    id            SERIAL PRIMARY KEY,
-    name          VARCHAR(300) NOT NULL UNIQUE,
-    audience_type VARCHAR(50)  NOT NULL DEFAULT 'all'
-        CHECK (audience_type IN ('internal', 'external', 'all'))
+    inn                    VARCHAR(12) NOT NULL,
+    activity_type_id       INTEGER     NOT NULL REFERENCES activity_types (id),
+    visitor_category       TEXT        NOT NULL CHECK (visitor_category IN ('internal', 'external')), -- внутренние / сторонние
+    cost_share_percent     NUMERIC(5, 2),
+    revenue_amount         NUMERIC(18, 2),
+    total_count            NUMERIC(15, 0),
+    state_task_count       NUMERIC(15, 0),
+    revenue_activity_count NUMERIC(15, 0),
+    year                   SMALLINT    NOT NULL DEFAULT 2022,
+
+    PRIMARY KEY (inn, activity_type_id, visitor_category, year),
 );
 
-CREATE TABLE activity_record
-(
-    id          SERIAL PRIMARY KEY,
-    activity_id INTEGER NOT NULL REFERENCES activity (id) ON DELETE CASCADE,
-    metric_id   INTEGER NOT NULL REFERENCES metric (id) ON DELETE CASCADE,
-    cost_share  DECIMAL(5, 2)
-);
-
-CREATE TABLE funding_source
-(
-    id                      SERIAL PRIMARY KEY,
-    record_id               INTEGER NOT NULL REFERENCES activity_record (id) ON DELETE CASCADE,
-    revenue                 DECIMAL(15, 2),
-    total_volume            INTEGER,
-    state_assignment_volume INTEGER,
-    income_activity_volume  INTEGER
-);
+CREATE INDEX idx_museum_activities_inn ON museum_activities (inn);
 
 CREATE TABLE museum_revenues_expense
 (

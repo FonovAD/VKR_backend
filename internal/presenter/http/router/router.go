@@ -26,6 +26,14 @@ func NewRouter(e *echo.Echo, h handler.AppHandler) {
 	museumRouter.GET("/search/by-inn", h.FindMuseumByINN)
 	museumRouter.GET("/owner/:owner_id", h.FindMuseumsByOwner)
 	museumRouter.GET("", h.ListMuseums)
+
+	// 👇 Новые маршруты для видов деятельности музея
+	activityRouter := e.Group("/api/v1/activity")
+	activityRouter.POST("", h.CreateActivity)
+	activityRouter.GET("/search/by-inn", h.GetActivitiesByINN) // получение по INN
+	activityRouter.PUT("", h.UpdateActivity)
+	activityRouter.DELETE("", h.DeleteActivity) // параметры в query
+	activityRouter.GET("", h.ListActivities)
 }
 
 func Ping(ctx echo.Context) error {

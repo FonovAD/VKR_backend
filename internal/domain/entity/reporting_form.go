@@ -14,7 +14,6 @@ type ReportingForm struct {
 	GeneralInfo value.FormGeneralInfo
 	MuseumData  value.MuseumDetails
 	Labor       value.LaborData
-	Activities  []value.ActivityRecord
 	Finances    value.FinancialData
 	Status      FormStatus
 }

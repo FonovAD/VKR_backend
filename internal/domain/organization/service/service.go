@@ -1,7 +1,7 @@
 package organization
 
-type OrganizationService struct{}
+type Service struct{}
 
-func NewStudentService() OrganizationService {
-	return OrganizationService{}
+func NewOrganizationService() Service {
+	return Service{}
 }
