@@ -7,6 +7,7 @@ import (
 	activity "vkr/internal/presenter/http/handler/activities"
 	"vkr/internal/presenter/http/handler/museum"
 	"vkr/internal/presenter/http/handler/organisation"
+	reportingform "vkr/internal/presenter/http/handler/reporting_form"
 )
 
 type Interactor interface {
@@ -26,12 +27,14 @@ type appHandler struct {
 	organisation.OrganizationHandler
 	museum.MuseumHandler
 	activity.ActivityHandler
+	reportingform.ReportingFormHandler
 }
 
 func (i *interactor) NewAppHandler() handler.AppHandler {
 	return &appHandler{
-		OrganizationHandler: i.NewOrganizationHandler(),
-		MuseumHandler:       i.NewMuseumHandler(),
-		ActivityHandler:     i.NewActivityHandler(),
+		OrganizationHandler:  i.NewOrganizationHandler(),
+		MuseumHandler:        i.NewMuseumHandler(),
+		ActivityHandler:      i.NewActivityHandler(),
+		ReportingFormHandler: i.NewReportingFormHandler(),
 	}
 }

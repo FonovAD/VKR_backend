@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"time"
+	_ "vkr/docs"
 	"vkr/internal/logger"
 	"vkr/internal/presenter/http/handler"
 

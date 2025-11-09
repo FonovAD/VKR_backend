@@ -1,6 +1,7 @@
 package organisation
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -62,7 +63,7 @@ func (h *organizationHandler) GetOrgByID(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, InternalServerErrorResponse{ErrorMsg: "internal error"})
 	}
 	if org == nil {
-		return ctx.JSON(http.StatusNotFound, map[string]string{"error": "organization not found"})
+		return ctx.JSON(http.StatusNotFound, NotFoundResponse{ErrorMsg: "organization not found"})
 	}
 
 	return ctx.JSON(http.StatusOK, org)
@@ -138,6 +139,7 @@ func (h *organizationHandler) OrgList(ctx echo.Context) error {
 		ctx.Set("error", err.Error())
 		return ctx.JSON(http.StatusInternalServerError, InternalServerErrorResponse{ErrorMsg: ErrInternalServer.Error()})
 	}
+	fmt.Println(orgs)
 
 	return ctx.JSON(http.StatusOK, orgs)
 }

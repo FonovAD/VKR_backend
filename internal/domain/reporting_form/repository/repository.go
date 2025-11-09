@@ -6,7 +6,7 @@ import (
 	"vkr/internal/domain/entity"
 )
 
-type ReportingFormRepository interface {
+type Repository interface {
 	Create(ctx context.Context, form *entity.ReportingForm) error
 	GetByID(ctx context.Context, id entity.FormID) (*entity.ReportingForm, error)
 	GetByOrganizationAndYear(ctx context.Context, orgID entity.OrganizationID, year int16) (*entity.ReportingForm, error)

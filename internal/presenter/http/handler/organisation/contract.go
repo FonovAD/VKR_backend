@@ -10,6 +10,10 @@ type InternalServerErrorResponse struct {
 	ErrorMsg string `json:"error"`
 }
 
+type NotFoundResponse struct {
+	ErrorMsg string `json:"error"`
+}
+
 type OrganizationID = entity.OrganizationID
 
 type CreateOrganizationDTO struct {
