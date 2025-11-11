@@ -1,5 +1,5 @@
 postgres:
-  database: nir_
+  database: NIR
   user: aleksandr
   password: ""
   host: localhost

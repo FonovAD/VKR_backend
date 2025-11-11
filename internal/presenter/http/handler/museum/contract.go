@@ -20,7 +20,7 @@ type CreateMuseumDTO struct {
 	Founder                          *string        `json:"founder,omitempty"`
 	MuseumActivityInCharter          bool           `json:"museum_activity_in_charter"`
 	Name                             string         `json:"name"`
-	MuseumLegalStatus                *string        `json:"museum_legal_status,omitempty"`
+	MuseumLegalStatus                string         `json:"museum_legal_status"`
 	IsMemorialReserveMuseum          bool           `json:"is_memorial_reserve_museum"`
 	IsHistoricalMemorialReserve      bool           `json:"is_historical_memorial_reserve"`
 	IsArtMuseum                      bool           `json:"is_art_museum"`
@@ -44,7 +44,7 @@ type UpdateMuseumDTO struct {
 	Founder                          *string        `json:"founder,omitempty"`
 	MuseumActivityInCharter          bool           `json:"museum_activity_in_charter"`
 	Name                             string         `json:"name"`
-	MuseumLegalStatus                *string        `json:"museum_legal_status,omitempty"`
+	MuseumLegalStatus                string         `json:"museum_legal_status"`
 	IsMemorialReserveMuseum          bool           `json:"is_memorial_reserve_museum"`
 	IsHistoricalMemorialReserve      bool           `json:"is_historical_memorial_reserve"`
 	IsArtMuseum                      bool           `json:"is_art_museum"`

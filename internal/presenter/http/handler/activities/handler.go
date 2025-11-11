@@ -13,6 +13,7 @@ import (
 type ActivityHandler interface {
 	CreateActivity(ctx echo.Context) error
 	GetActivitiesByINN(ctx echo.Context) error
+	GetActivitiesByMuseumID(ctx echo.Context) error
 	UpdateActivity(ctx echo.Context) error
 	DeleteActivity(ctx echo.Context) error
 	ListActivities(ctx echo.Context) error
@@ -34,12 +35,21 @@ func (h *activityHandler) CreateActivity(ctx echo.Context) error {
 	}
 
 	if !isValidVisitorCategory(req.VisitorCategory) {
-		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid visitor_category: must be 'internal', 'external' or 'total'"})
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid visitor_category: must be 'internal' or 'external'"})
+	}
+
+	// Проверяем, что указан либо ActivityTypeID, либо CustomActivityID
+	if (req.ActivityTypeID == nil && req.CustomActivityID == nil) || 
+		(req.ActivityTypeID != nil && req.CustomActivityID != nil) {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{
+			ErrorMsg: "exactly one of 'activity_type_id' or 'custom_activity_id' must be provided",
+		})
 	}
 
 	activityEntity := &entity.Activity{
 		INN:                  req.INN,
 		ActivityTypeID:       req.ActivityTypeID,
+		CustomActivityID:     req.CustomActivityID,
 		VisitorCategory:      req.VisitorCategory,
 		CostSharePercent:     req.CostSharePercent,
 		RevenueAmount:        req.RevenueAmount,
@@ -70,7 +80,33 @@ func (h *activityHandler) GetActivitiesByINN(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
 	}
 
-	return ctx.JSON(http.StatusOK, activities)
+	responses := make([]ActivityResponse, len(activities))
+	for i, activity := range activities {
+		responses[i] = NewActivityResponse(activity)
+	}
+
+	return ctx.JSON(http.StatusOK, responses)
+}
+
+func (h *activityHandler) GetActivitiesByMuseumID(ctx echo.Context) error {
+	museumIDParam := ctx.Param("museum_id")
+	museumID, err := strconv.Atoi(museumIDParam)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid museum_id"})
+	}
+
+	activities, err := h.useCase.GetByMuseumID(ctx.Request().Context(), entity.MuseumID(museumID))
+	if err != nil {
+		h.logger.LogError("activityHandler - GetActivitiesByMuseumID", nil, err)
+		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
+	}
+
+	responses := make([]ActivityResponse, len(activities))
+	for i, activity := range activities {
+		responses[i] = NewActivityResponse(activity)
+	}
+
+	return ctx.JSON(http.StatusOK, responses)
 }
 
 func (h *activityHandler) UpdateActivity(ctx echo.Context) error {
@@ -79,14 +115,37 @@ func (h *activityHandler) UpdateActivity(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: err.Error()})
 	}
 
-	if !isValidVisitorCategory(req.VisitorCategory) {
-		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid visitor_category"})
+	if req.ID == nil {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "id is required"})
 	}
 
+	// Получаем текущую активность для получения остальных полей
+	activities, err := h.useCase.List(ctx.Request().Context())
+	if err != nil {
+		h.logger.LogError("activityHandler - UpdateActivity - List", nil, err)
+		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
+	}
+
+	var currentActivity *entity.Activity
+	for i := range activities {
+		if activities[i].ID != nil && *activities[i].ID == *req.ID {
+			currentActivity = &activities[i]
+			break
+		}
+	}
+
+	if currentActivity == nil {
+		return ctx.JSON(http.StatusNotFound, BadRequestResponse{ErrorMsg: "activity not found"})
+	}
+
+	// Обновляем только переданные поля
 	activityEntity := &entity.Activity{
-		INN:                  req.INN,
-		ActivityTypeID:       req.ActivityTypeID,
-		VisitorCategory:      req.VisitorCategory,
+		ID:                   req.ID,
+		IDOwner:              currentActivity.IDOwner,
+		INN:                  currentActivity.INN,
+		ActivityTypeID:       currentActivity.ActivityTypeID,
+		CustomActivityID:     currentActivity.CustomActivityID,
+		VisitorCategory:      currentActivity.VisitorCategory,
 		CostSharePercent:     req.CostSharePercent,
 		RevenueAmount:        req.RevenueAmount,
 		TotalCount:           req.TotalCount,
@@ -95,7 +154,7 @@ func (h *activityHandler) UpdateActivity(ctx echo.Context) error {
 		Year:                 req.Year,
 	}
 
-	_, err := h.useCase.Update(ctx.Request().Context(), activityEntity)
+	_, err = h.useCase.Update(ctx.Request().Context(), activityEntity)
 	if err != nil {
 		h.logger.LogError("activityHandler - UpdateActivity", nil, err)
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
@@ -105,37 +164,19 @@ func (h *activityHandler) UpdateActivity(ctx echo.Context) error {
 }
 
 func (h *activityHandler) DeleteActivity(ctx echo.Context) error {
-	// Получаем параметры из query — так удобнее для составного ключа
-	inn := ctx.QueryParam("inn")
-	typeIDStr := ctx.QueryParam("activity_type_id")
-	category := ctx.QueryParam("visitor_category")
-	yearStr := ctx.QueryParam("year")
-
-	if inn == "" || typeIDStr == "" || category == "" || yearStr == "" {
+	idStr := ctx.QueryParam("id")
+	if idStr == "" {
 		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{
-			ErrorMsg: "query params 'inn', 'activity_type_id', 'visitor_category', 'year' are required",
+			ErrorMsg: "query param 'id' is required",
 		})
 	}
 
-	activityTypeID, err := strconv.Atoi(typeIDStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid activity_type_id"})
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid id"})
 	}
 
-	var visitorCategory entity.VisitorCategory
-	switch category {
-	case "internal", "external", "total":
-		visitorCategory = entity.VisitorCategory(category)
-	default:
-		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid visitor_category"})
-	}
-
-	year, err := strconv.ParseInt(yearStr, 10, 16)
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid year"})
-	}
-
-	err = h.useCase.Delete(ctx.Request().Context(), inn, activityTypeID, visitorCategory, int16(year))
+	err = h.useCase.DeleteByID(ctx.Request().Context(), id)
 	if err != nil {
 		h.logger.LogError("activityHandler - DeleteActivity", nil, err)
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
@@ -151,13 +192,18 @@ func (h *activityHandler) ListActivities(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
 	}
 
-	return ctx.JSON(http.StatusOK, activities)
+	responses := make([]ActivityResponse, len(activities))
+	for i, activity := range activities {
+		responses[i] = NewActivityResponse(activity)
+	}
+
+	return ctx.JSON(http.StatusOK, responses)
 }
 
 // Вспомогательная функция валидации категории
 func isValidVisitorCategory(v VisitorCategory) bool {
 	switch v {
-	case "internal", "external", "total":
+	case "internal", "external":
 		return true
 	default:
 		return false

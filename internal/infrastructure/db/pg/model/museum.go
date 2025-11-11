@@ -8,7 +8,7 @@ type Museum struct {
 	Founder                          *string `db:"founder"`
 	MuseumActivityInCharter          bool    `db:"museum_activity_in_charter"`
 	Name                             string  `db:"name"`
-	MuseumLegalStatus                *string `db:"museum_legal_status"`
+	MuseumLegalStatus                string  `db:"museum_legal_status"`
 	IsMemorialReserveMuseum          bool    `db:"is_memorial_reserve_museum"`
 	IsHistoricalMemorialReserve      bool    `db:"is_historical_memorial_reserve"`
 	IsArtMuseum                      bool    `db:"is_art_museum"`

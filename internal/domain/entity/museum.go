@@ -10,7 +10,7 @@ type Museum struct {
 	Founder                          *string
 	MuseumActivityInCharter          bool
 	Name                             string
-	MuseumLegalStatus                *string
+	MuseumLegalStatus                string
 	IsMemorialReserveMuseum          bool
 	IsHistoricalMemorialReserve      bool
 	IsArtMuseum                      bool

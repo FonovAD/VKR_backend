@@ -31,20 +31,15 @@ func NewRouter(e *echo.Echo, h handler.AppHandler) {
 
 	activityRouter := e.Group("/api/v1/activity")
 	activityRouter.POST("", h.CreateActivity)
-	activityRouter.GET("/search/by-inn", h.GetActivitiesByINN) // получение по INN
+	activityRouter.GET("/search/by-inn", h.GetActivitiesByINN)
+	activityRouter.GET("/museum/:museum_id", h.GetActivitiesByMuseumID)
 	activityRouter.PUT("", h.UpdateActivity)
-	activityRouter.DELETE("", h.DeleteActivity) // параметры в query
+	activityRouter.DELETE("", h.DeleteActivity)
 	activityRouter.GET("", h.ListActivities)
 
-	formRouter := e.Group("/api/v1/reporting-form")
-	formRouter.GET("/organization/:org_id/year/:year", h.GetReportingFormByOrganizationAndYear)
-	formRouter.GET("/organization/:org_id", h.ListReportingFormsByOrganization)
-	formRouter.GET("/year/:year", h.ListReportingFormsByYear)
-	formRouter.POST("", h.CreateReportingForm)
-	formRouter.GET("/:id", h.GetReportingFormByID)
-	formRouter.PUT("/:id", h.UpdateReportingForm)
-	formRouter.DELETE("/:id", h.DeleteReportingForm)
-	formRouter.GET("", h.ListReportingForms)
+	laborRouter := e.Group("/api/v1/labor")
+	laborRouter.GET("/organization/:org_id", h.GetByOrganizationID)
+	laborRouter.GET("/search/by-inn", h.GetByOrganizationINN)
 }
 
 func Ping(ctx echo.Context) error {

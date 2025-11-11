@@ -10,8 +10,10 @@ import (
 type ActivityUseCase interface {
 	Create(ctx context.Context, activity *entity.Activity) (*entity.Activity, error)
 	GetByINN(ctx context.Context, inn string) ([]entity.Activity, error)
+	GetByMuseumID(ctx context.Context, museumID entity.MuseumID) ([]entity.Activity, error)
 	Update(ctx context.Context, activity *entity.Activity) (*entity.Activity, error)
 	Delete(ctx context.Context, inn string, activityTypeID int, visitorCategory entity.VisitorCategory, year int16) error
+	DeleteByID(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]entity.Activity, error)
 }
 
@@ -38,6 +40,10 @@ func (u *activityUseCase) GetByINN(ctx context.Context, inn string) ([]entity.Ac
 	return u.repo.GetByINN(ctx, inn)
 }
 
+func (u *activityUseCase) GetByMuseumID(ctx context.Context, museumID entity.MuseumID) ([]entity.Activity, error) {
+	return u.repo.GetByMuseumID(ctx, museumID)
+}
+
 func (u *activityUseCase) Update(ctx context.Context, activity *entity.Activity) (*entity.Activity, error) {
 	if err := u.repo.Update(ctx, activity); err != nil {
 		return nil, err
@@ -47,6 +53,10 @@ func (u *activityUseCase) Update(ctx context.Context, activity *entity.Activity)
 
 func (u *activityUseCase) Delete(ctx context.Context, inn string, activityTypeID int, visitorCategory entity.VisitorCategory, year int16) error {
 	return u.repo.Delete(ctx, inn, activityTypeID, visitorCategory, year)
+}
+
+func (u *activityUseCase) DeleteByID(ctx context.Context, id int64) error {
+	return u.repo.DeleteByID(ctx, id)
 }
 
 func (u *activityUseCase) List(ctx context.Context) ([]entity.Activity, error) {
