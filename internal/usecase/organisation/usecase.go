@@ -14,7 +14,7 @@ type UseCase interface {
 	Update(ctx context.Context, id entity.OrganizationID, inn, name string, existMuseum bool) (*entity.Organization, error)
 	Delete(ctx context.Context, id entity.OrganizationID) error
 	FindByINN(ctx context.Context, inn string) (*entity.Organization, error)
-	List(ctx context.Context) ([]*entity.Organization, error)
+	List(ctx context.Context, name *string, limit, offset int) (*orgRepo.ListResult, error)
 }
 
 type organizationUseCase struct {
@@ -79,6 +79,10 @@ func (u *organizationUseCase) FindByINN(ctx context.Context, inn string) (*entit
 	return u.orgRepo.FindByINN(ctx, inn)
 }
 
-func (u *organizationUseCase) List(ctx context.Context) ([]*entity.Organization, error) {
-	return u.orgRepo.List(ctx)
+func (u *organizationUseCase) List(ctx context.Context, name *string, limit, offset int) (*orgRepo.ListResult, error) {
+	return u.orgRepo.List(ctx, orgRepo.ListParams{
+		Name:   name,
+		Limit:  limit,
+		Offset: offset,
+	})
 }

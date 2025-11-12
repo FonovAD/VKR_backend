@@ -116,12 +116,22 @@ func (r *museumRepository) FindByOwner(ctx context.Context, ownerID entity.Organ
 	return entities, nil
 }
 
-func (r *museumRepository) List(ctx context.Context) ([]*entity.Museum, error) {
+func (r *museumRepository) List(ctx context.Context, params museumRepo.ListParams) (*museumRepo.ListResult, error) {
 	r.logger.LogInfo("museumRepository - List", nil, nil)
-	var dbModels []model.Museum
-	err := r.db.SelectContext(ctx, &dbModels, listMuseumsQuery)
+	
+	// Get total count
+	var totalCount int64
+	err := r.db.GetContext(ctx, &totalCount, countMuseumsQuery, params.Name, params.MuseumType)
 	if err != nil {
-		r.logger.LogError("museumRepository - List", nil, err)
+		r.logger.LogError("museumRepository - List - Count", nil, err)
+		return nil, err
+	}
+
+	// Get paginated results
+	var dbModels []model.Museum
+	err = r.db.SelectContext(ctx, &dbModels, listMuseumsQuery, params.Name, params.MuseumType, params.Limit, params.Offset)
+	if err != nil {
+		r.logger.LogError("museumRepository - List - Select", nil, err)
 		return nil, err
 	}
 
@@ -129,5 +139,9 @@ func (r *museumRepository) List(ctx context.Context) ([]*entity.Museum, error) {
 	for i, m := range dbModels {
 		entities[i] = r.toEntity(&m)
 	}
-	return entities, nil
+
+	return &museumRepo.ListResult{
+		Museums:    entities,
+		TotalCount: totalCount,
+	}, nil
 }

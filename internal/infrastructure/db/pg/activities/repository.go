@@ -134,13 +134,22 @@ func (r *activityRepository) DeleteByID(ctx context.Context, id int64) error {
 	return err
 }
 
-func (r *activityRepository) List(ctx context.Context) ([]entity.Activity, error) {
+func (r *activityRepository) List(ctx context.Context, params activity.ListParams) (*activity.ListResult, error) {
 	r.logger.LogInfo("activityRepository - List", nil, nil)
 
-	var dbModels []model.Activity
-	err := r.db.SelectContext(ctx, &dbModels, listActivitiesQuery)
+	// Get total count
+	var totalCount int64
+	err := r.db.GetContext(ctx, &totalCount, countActivitiesQuery)
 	if err != nil {
-		r.logger.LogError("activityRepository - List", nil, err)
+		r.logger.LogError("activityRepository - List - Count", nil, err)
+		return nil, err
+	}
+
+	// Get paginated results
+	var dbModels []model.Activity
+	err = r.db.SelectContext(ctx, &dbModels, listActivitiesQuery, params.Limit, params.Offset)
+	if err != nil {
+		r.logger.LogError("activityRepository - List - Select", nil, err)
 		return nil, err
 	}
 
@@ -148,7 +157,11 @@ func (r *activityRepository) List(ctx context.Context) ([]entity.Activity, error
 	for i, m := range dbModels {
 		entities[i] = r.toEntityActivity(&m)
 	}
-	return entities, nil
+
+	return &activity.ListResult{
+		Activities: entities,
+		TotalCount: totalCount,
+	}, nil
 }
 
 // Маппинг в модель БД

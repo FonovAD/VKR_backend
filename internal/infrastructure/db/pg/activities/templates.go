@@ -31,7 +31,7 @@ const (
 		JOIN organization o ON o.id = ma.id_owner
 		LEFT JOIN activity_types at ON at.id = ma.activity_type_id
 		LEFT JOIN activity_custom_types cat ON cat.id = ma.custom_activity_id
-		WHERE o.inn = $1
+		WHERE LOWER(o.inn) = LOWER($1)
 		ORDER BY COALESCE(ma.activity_type_id, ma.custom_activity_id), ma.visitor_category`
 
 	updateActivityQuery = `
@@ -68,7 +68,12 @@ const (
 		JOIN organization o ON o.id = ma.id_owner
 		LEFT JOIN activity_types at ON at.id = ma.activity_type_id
 		LEFT JOIN activity_custom_types cat ON cat.id = ma.custom_activity_id
-		ORDER BY o.inn, COALESCE(ma.activity_type_id, ma.custom_activity_id), ma.visitor_category`
+		ORDER BY o.inn, COALESCE(ma.activity_type_id, ma.custom_activity_id), ma.visitor_category
+		LIMIT $1 OFFSET $2`
+
+	countActivitiesQuery = `
+		SELECT COUNT(*)
+		FROM museum_activities`
 
 	getActivityByMuseumIDQuery = `
 		SELECT 

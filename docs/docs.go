@@ -34,14 +34,45 @@ const docTemplate = `{
         "/api/v1/organization": {
             "get": {
                 "tags": ["Organization"],
-                "summary": "List organizations",
+                "summary": "List organizations with pagination and filtering",
+                "description": "Returns paginated list of organizations. Supports filtering by name (substring search, case-insensitive) and pagination.",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string",
+                        "description": "Filter organizations by name (partial match, case-insensitive)"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 1,
+                        "description": "Page number (1-based)"
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "description": "Number of items per page (max 100)"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of organizations",
-                        "schema": {
-                            "type": "array",
-                            "items": {"$ref": "#/definitions/Organization"}
-                        }
+                        "description": "Paginated list of organizations",
+                        "schema": {"$ref": "#/definitions/PaginatedOrganizationResponse"}
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
                     },
                     "500": {
                         "description": "Internal server error",
@@ -185,14 +216,57 @@ const docTemplate = `{
         "/api/v1/museum": {
             "get": {
                 "tags": ["Museum"],
-                "summary": "List museums",
+                "summary": "List museums with pagination and filtering",
+                "description": "Returns paginated list of museums. Supports filtering by name (substring search) and museum type.",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string",
+                        "description": "Filter museums by name (partial match, case-insensitive)"
+                    },
+                    {
+                        "name": "museum_type",
+                        "in": "query",
+                        "required": false,
+                        "type": "string",
+                        "enum": ["art", "memorial_reserve", "historical_memorial_reserve", "museum_reserve", "estate", "palace_park_ensemble", "historical_architectural_reserve"],
+                        "description": "Filter museums by type. Valid values: art, memorial_reserve, historical_memorial_reserve, museum_reserve, estate, palace_park_ensemble, historical_architectural_reserve"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 1,
+                        "description": "Page number (1-based)"
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "description": "Number of items per page (max 100)"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of museums",
-                        "schema": {
-                            "type": "array",
-                            "items": {"$ref": "#/definitions/Museum"}
-                        }
+                        "description": "Paginated list of museums",
+                        "schema": {"$ref": "#/definitions/PaginatedMuseumResponse"}
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
                     }
                 }
             },
@@ -344,14 +418,42 @@ const docTemplate = `{
         "/api/v1/activity": {
             "get": {
                 "tags": ["Activity"],
-                "summary": "List activities",
+                "summary": "List activities with pagination",
+                "description": "Returns paginated list of activities.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 1,
+                        "description": "Page number (1-based)"
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100,
+                        "description": "Number of items per page (max 100)"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of activities",
-                        "schema": {
-                            "type": "array",
-                            "items": {"$ref": "#/definitions/Activity"}
-                        }
+                        "description": "Paginated list of activities",
+                        "schema": {"$ref": "#/definitions/PaginatedActivityResponse"}
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
                     }
                 }
             },
@@ -693,6 +795,45 @@ const docTemplate = `{
                 "research_staff_external": {"type": "number", "format": "float"},
                 "core_operational_staff_external": {"type": "number", "format": "float"},
                 "admin_support_staff_external": {"type": "number", "format": "float"}
+            }
+        },
+        "PaginatedOrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/Organization"}
+                },
+                "page": {"type": "integer", "format": "int32", "description": "Current page number"},
+                "page_size": {"type": "integer", "format": "int32", "description": "Number of items per page"},
+                "total_count": {"type": "integer", "format": "int64", "description": "Total number of items"},
+                "total_pages": {"type": "integer", "format": "int32", "description": "Total number of pages"}
+            }
+        },
+        "PaginatedMuseumResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/Museum"}
+                },
+                "page": {"type": "integer", "format": "int32", "description": "Current page number"},
+                "page_size": {"type": "integer", "format": "int32", "description": "Number of items per page"},
+                "total_count": {"type": "integer", "format": "int64", "description": "Total number of items"},
+                "total_pages": {"type": "integer", "format": "int32", "description": "Total number of pages"}
+            }
+        },
+        "PaginatedActivityResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/Activity"}
+                },
+                "page": {"type": "integer", "format": "int32", "description": "Current page number"},
+                "page_size": {"type": "integer", "format": "int32", "description": "Number of items per page"},
+                "total_count": {"type": "integer", "format": "int64", "description": "Total number of items"},
+                "total_pages": {"type": "integer", "format": "int32", "description": "Total number of pages"}
             }
         }
     }

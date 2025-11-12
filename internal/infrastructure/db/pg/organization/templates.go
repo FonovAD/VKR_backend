@@ -23,10 +23,17 @@ const (
 	findOrganizationByINNQuery = `
 		SELECT id, inn, name, exist_museum
 		FROM organization
-		WHERE inn = $1`
+		WHERE LOWER(inn) = LOWER($1)`
 
 	listOrganizationsQuery = `
 		SELECT id, inn, name, exist_museum
 		FROM organization
-		ORDER BY id`
+		WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
+		ORDER BY id
+		LIMIT $2 OFFSET $3`
+
+	countOrganizationsQuery = `
+		SELECT COUNT(*)
+		FROM organization
+		WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')`
 )

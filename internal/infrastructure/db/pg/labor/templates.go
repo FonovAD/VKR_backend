@@ -37,6 +37,6 @@ const (
 			name,
 			exist_museum
 		FROM organization
-		WHERE inn = $1
+		WHERE LOWER(inn) = LOWER($1)
 		LIMIT 1`
 )

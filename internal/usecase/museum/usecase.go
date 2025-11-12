@@ -15,7 +15,7 @@ type UseCase interface {
 	Delete(ctx context.Context, id entity.MuseumID) error
 	FindByINN(ctx context.Context, inn string) (*entity.Museum, error)
 	FindByOwner(ctx context.Context, ownerID entity.OrganizationID) ([]*entity.Museum, error)
-	List(ctx context.Context) ([]*entity.Museum, error)
+	List(ctx context.Context, name, museumType *string, limit, offset int) (*museumRepo.ListResult, error)
 }
 
 type museumUseCase struct {
@@ -60,6 +60,11 @@ func (u *museumUseCase) FindByOwner(ctx context.Context, ownerID entity.Organiza
 	return u.repo.FindByOwner(ctx, ownerID)
 }
 
-func (u *museumUseCase) List(ctx context.Context) ([]*entity.Museum, error) {
-	return u.repo.List(ctx)
+func (u *museumUseCase) List(ctx context.Context, name, museumType *string, limit, offset int) (*museumRepo.ListResult, error) {
+	return u.repo.List(ctx, museumRepo.ListParams{
+		Name:       name,
+		MuseumType: museumType,
+		Limit:      limit,
+		Offset:     offset,
+	})
 }

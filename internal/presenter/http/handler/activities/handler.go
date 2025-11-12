@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"vkr/internal/domain/entity"
 	"vkr/internal/logger"
+	"vkr/internal/presenter/http/pagination"
 	"vkr/internal/usecase/activities"
 )
 
@@ -120,16 +121,17 @@ func (h *activityHandler) UpdateActivity(ctx echo.Context) error {
 	}
 
 	// Получаем текущую активность для получения остальных полей
-	activities, err := h.useCase.List(ctx.Request().Context())
+	// Используем большой лимит для получения всех активностей (можно оптимизировать позже, добавив GetByID)
+	result, err := h.useCase.List(ctx.Request().Context(), 10000, 0)
 	if err != nil {
 		h.logger.LogError("activityHandler - UpdateActivity - List", nil, err)
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
 	}
 
 	var currentActivity *entity.Activity
-	for i := range activities {
-		if activities[i].ID != nil && *activities[i].ID == *req.ID {
-			currentActivity = &activities[i]
+	for i := range result.Activities {
+		if result.Activities[i].ID != nil && *result.Activities[i].ID == *req.ID {
+			currentActivity = &result.Activities[i]
 			break
 		}
 	}
@@ -186,18 +188,36 @@ func (h *activityHandler) DeleteActivity(ctx echo.Context) error {
 }
 
 func (h *activityHandler) ListActivities(ctx echo.Context) error {
-	activities, err := h.useCase.List(ctx.Request().Context())
+	// Parse pagination parameters
+	var paginationParams pagination.PaginationParams
+	if err := ctx.Bind(&paginationParams); err != nil {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid pagination parameters"})
+	}
+	paginationParams.ValidateAndSetDefaults()
+
+	// Get paginated list
+	result, err := h.useCase.List(ctx.Request().Context(), paginationParams.Limit(), paginationParams.Offset())
 	if err != nil {
 		h.logger.LogError("activityHandler - ListActivities", nil, err)
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
 	}
 
-	responses := make([]ActivityResponse, len(activities))
-	for i, activity := range activities {
+	// Convert to response format
+	responses := make([]ActivityResponse, len(result.Activities))
+	for i, activity := range result.Activities {
 		responses[i] = NewActivityResponse(activity)
 	}
 
-	return ctx.JSON(http.StatusOK, responses)
+	// Build paginated response
+	response := pagination.PaginatedResponse[ActivityResponse]{
+		Data:       responses,
+		Page:       paginationParams.Page,
+		PageSize:   paginationParams.PageSize,
+		TotalCount: result.TotalCount,
+		TotalPages: pagination.CalculateTotalPages(result.TotalCount, paginationParams.PageSize),
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // Вспомогательная функция валидации категории

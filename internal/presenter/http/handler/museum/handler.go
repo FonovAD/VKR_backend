@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"vkr/internal/domain/entity"
 	"vkr/internal/logger"
+	"vkr/internal/presenter/http/pagination"
 	"vkr/internal/usecase/museum"
 )
 
@@ -189,13 +190,42 @@ func (h *museumHandler) FindMuseumsByOwner(ctx echo.Context) error {
 }
 
 func (h *museumHandler) ListMuseums(ctx echo.Context) error {
-	museums, err := h.useCase.List(ctx.Request().Context())
+	// Parse pagination parameters
+	var paginationParams pagination.PaginationParams
+	if err := ctx.Bind(&paginationParams); err != nil {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid pagination parameters"})
+	}
+	paginationParams.ValidateAndSetDefaults()
+
+	// Parse name filter
+	var nameFilter *string
+	if name := ctx.QueryParam("name"); name != "" {
+		nameFilter = &name
+	}
+
+	// Parse museum type filter
+	var museumTypeFilter *string
+	if museumType := ctx.QueryParam("museum_type"); museumType != "" {
+		museumTypeFilter = &museumType
+	}
+
+	// Get paginated list
+	result, err := h.useCase.List(ctx.Request().Context(), nameFilter, museumTypeFilter, paginationParams.Limit(), paginationParams.Offset())
 	if err != nil {
 		h.logger.LogError("museumHandler - ListMuseums", nil, err)
 		return ctx.JSON(http.StatusInternalServerError, ErrInternalServer)
 	}
 
-	return ctx.JSON(http.StatusOK, museums)
+	// Build paginated response
+	response := pagination.PaginatedResponse[*entity.Museum]{
+		Data:       result.Museums,
+		Page:       paginationParams.Page,
+		PageSize:   paginationParams.PageSize,
+		TotalCount: result.TotalCount,
+		TotalPages: pagination.CalculateTotalPages(result.TotalCount, paginationParams.PageSize),
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 func parseMuseumID(s string) (MuseumID, error) {

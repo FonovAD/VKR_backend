@@ -96,11 +96,22 @@ func (r *organizationRepository) FindByINN(ctx context.Context, inn string) (*en
 	return r.toEntity(&dbModel), nil
 }
 
-func (r *organizationRepository) List(ctx context.Context) ([]*entity.Organization, error) {
-	r.logger.LogInfo("organizationRepository - FindByINN", nil, nil)
-	var dbModels []OrganizationDB
-	err := r.db.SelectContext(ctx, &dbModels, listOrganizationsQuery)
+func (r *organizationRepository) List(ctx context.Context, params organization.ListParams) (*organization.ListResult, error) {
+	r.logger.LogInfo("organizationRepository - List", nil, nil)
+	
+	// Get total count
+	var totalCount int64
+	err := r.db.GetContext(ctx, &totalCount, countOrganizationsQuery, params.Name)
 	if err != nil {
+		r.logger.LogError("organizationRepository - List - Count", nil, err)
+		return nil, err
+	}
+
+	// Get paginated results
+	var dbModels []OrganizationDB
+	err = r.db.SelectContext(ctx, &dbModels, listOrganizationsQuery, params.Name, params.Limit, params.Offset)
+	if err != nil {
+		r.logger.LogError("organizationRepository - List - Select", nil, err)
 		return nil, err
 	}
 
@@ -108,7 +119,11 @@ func (r *organizationRepository) List(ctx context.Context) ([]*entity.Organizati
 	for i, m := range dbModels {
 		entities[i] = r.toEntity(&m)
 	}
-	return entities, nil
+
+	return &organization.ListResult{
+		Organizations: entities,
+		TotalCount:    totalCount,
+	}, nil
 }
 
 func (r *organizationRepository) toEntity(dbModel *OrganizationDB) *entity.Organization {

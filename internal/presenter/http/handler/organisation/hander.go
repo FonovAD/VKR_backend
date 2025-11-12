@@ -1,11 +1,12 @@
 package organisation
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
+	"vkr/internal/domain/entity"
 	"vkr/internal/logger"
+	"vkr/internal/presenter/http/pagination"
 	"vkr/internal/usecase/organisation"
 )
 
@@ -134,14 +135,36 @@ func (h *organizationHandler) FindOrgByINN(ctx echo.Context) error {
 }
 
 func (h *organizationHandler) OrgList(ctx echo.Context) error {
-	orgs, err := h.useCase.List(ctx.Request().Context())
+	// Parse pagination parameters
+	var paginationParams pagination.PaginationParams
+	if err := ctx.Bind(&paginationParams); err != nil {
+		return ctx.JSON(http.StatusBadRequest, BadRequestResponse{ErrorMsg: "invalid pagination parameters"})
+	}
+	paginationParams.ValidateAndSetDefaults()
+
+	// Parse name filter
+	var nameFilter *string
+	if name := ctx.QueryParam("name"); name != "" {
+		nameFilter = &name
+	}
+
+	// Get paginated list
+	result, err := h.useCase.List(ctx.Request().Context(), nameFilter, paginationParams.Limit(), paginationParams.Offset())
 	if err != nil {
 		ctx.Set("error", err.Error())
 		return ctx.JSON(http.StatusInternalServerError, InternalServerErrorResponse{ErrorMsg: ErrInternalServer.Error()})
 	}
-	fmt.Println(orgs)
 
-	return ctx.JSON(http.StatusOK, orgs)
+	// Build paginated response
+	response := pagination.PaginatedResponse[*entity.Organization]{
+		Data:       result.Organizations,
+		Page:       paginationParams.Page,
+		PageSize:   paginationParams.PageSize,
+		TotalCount: result.TotalCount,
+		TotalPages: pagination.CalculateTotalPages(result.TotalCount, paginationParams.PageSize),
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 func parseOrganizationID(s string) (OrganizationID, error) {

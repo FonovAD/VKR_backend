@@ -14,7 +14,7 @@ type ActivityUseCase interface {
 	Update(ctx context.Context, activity *entity.Activity) (*entity.Activity, error)
 	Delete(ctx context.Context, inn string, activityTypeID int, visitorCategory entity.VisitorCategory, year int16) error
 	DeleteByID(ctx context.Context, id int64) error
-	List(ctx context.Context) ([]entity.Activity, error)
+	List(ctx context.Context, limit, offset int) (*activRepo.ListResult, error)
 }
 
 type activityUseCase struct {
@@ -59,6 +59,9 @@ func (u *activityUseCase) DeleteByID(ctx context.Context, id int64) error {
 	return u.repo.DeleteByID(ctx, id)
 }
 
-func (u *activityUseCase) List(ctx context.Context) ([]entity.Activity, error) {
-	return u.repo.List(ctx)
+func (u *activityUseCase) List(ctx context.Context, limit, offset int) (*activRepo.ListResult, error) {
+	return u.repo.List(ctx, activRepo.ListParams{
+		Limit:  limit,
+		Offset: offset,
+	})
 }

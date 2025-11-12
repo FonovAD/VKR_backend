@@ -63,7 +63,7 @@ const (
 			internal_visitors_count, external_visitors_count,
 			is_valuable_cultural_heritage, valuable_museum_items_count
 		FROM museum
-		WHERE inn = $1`
+		WHERE LOWER(inn) = LOWER($1)`
 
 	findMuseumsByOwnerQuery = `
 		SELECT
@@ -85,5 +85,32 @@ const (
 			internal_visitors_count, external_visitors_count,
 			is_valuable_cultural_heritage, valuable_museum_items_count
 		FROM museum
-		ORDER BY id`
+		WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
+			AND (
+				$2::text IS NULL OR
+				($2 = 'memorial_reserve' AND is_memorial_reserve_museum = true) OR
+				($2 = 'historical_memorial_reserve' AND is_historical_memorial_reserve = true) OR
+				($2 = 'art' AND is_art_museum = true) OR
+				($2 = 'museum_reserve' AND is_museum_reserve = true) OR
+				($2 = 'estate' AND is_estate_museum = true) OR
+				($2 = 'palace_park_ensemble' AND is_palace_park_ensemble = true) OR
+				($2 = 'historical_architectural_reserve' AND is_historical_architectural_reserve = true)
+			)
+		ORDER BY id
+		LIMIT $3 OFFSET $4`
+
+	countMuseumsQuery = `
+		SELECT COUNT(*)
+		FROM museum
+		WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
+			AND (
+				$2::text IS NULL OR
+				($2 = 'memorial_reserve' AND is_memorial_reserve_museum = true) OR
+				($2 = 'historical_memorial_reserve' AND is_historical_memorial_reserve = true) OR
+				($2 = 'art' AND is_art_museum = true) OR
+				($2 = 'museum_reserve' AND is_museum_reserve = true) OR
+				($2 = 'estate' AND is_estate_museum = true) OR
+				($2 = 'palace_park_ensemble' AND is_palace_park_ensemble = true) OR
+				($2 = 'historical_architectural_reserve' AND is_historical_architectural_reserve = true)
+			)`
 )

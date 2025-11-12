@@ -16,6 +16,7 @@ import (
 	"vkr/internal/presenter/http/handler"
 
 	"github.com/heetch/confita"
+	"github.com/heetch/confita/backend/env"
 	"github.com/heetch/confita/backend/file"
 	_ "github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
@@ -27,7 +28,7 @@ import (
 
 type Config struct {
 	Postgres pg.PGConfig `yaml:"postgres"`
-	Port     string      `yaml:"port" required:"true"`
+	Port     string      `config:"PORT" yaml:"port" required:"true"`
 }
 
 func main() {
@@ -105,12 +106,17 @@ func parseRootPath() string {
 func loadConfig(rootPath string) (Config, error) {
 	path := fmt.Sprintf("%s/config/default.yml", rootPath)
 
-	loader := confita.NewLoader(file.NewBackend(path))
+	// Create loader with multiple backends
+	// Order matters: file backend loads defaults first, then env backend overrides
+	loader := confita.NewLoader(
+		file.NewBackend(path), // Load defaults from file first
+		env.NewBackend(),      // Then override with environment variables
+	)
 	ctx := context.Background()
 
 	var cfg Config
 	if err := loader.Load(ctx, &cfg); err != nil {
-		return Config{}, fmt.Errorf("failed to load config from %s: %w", path, err)
+		return Config{}, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	return cfg, nil
