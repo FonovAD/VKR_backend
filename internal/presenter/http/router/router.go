@@ -40,6 +40,21 @@ func NewRouter(e *echo.Echo, h handler.AppHandler) {
 	laborRouter := e.Group("/api/v1/labor")
 	laborRouter.GET("/organization/:org_id", h.GetByOrganizationID)
 	laborRouter.GET("/search/by-inn", h.GetByOrganizationINN)
+
+	// Эндпоинты для форм отчетности
+	formRouter := e.Group("/api/v1/form")
+	
+	// Форма трудовых ресурсов
+	formRouter.GET("/labor/organization/:org_id", h.GetLaborForm)
+	formRouter.GET("/labor/search/by-inn", h.GetLaborFormByINN)
+	
+	// Форма объемов (активностей)
+	formRouter.GET("/activities/organization/:org_id", h.GetActivitiesForm)
+	formRouter.GET("/activities/search/by-inn", h.GetActivitiesFormByINN)
+	
+	// Форма поступлений и расходов
+	formRouter.GET("/financial/organization/:org_id", h.GetFinancialForm)
+	formRouter.GET("/financial/search/by-inn", h.GetFinancialFormByINN)
 }
 
 func Ping(ctx echo.Context) error {

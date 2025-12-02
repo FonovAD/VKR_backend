@@ -6,6 +6,7 @@ type Activity struct {
 	INN                 string
 	ActivityTypeID      *int
 	ActivityTypeName    *string
+	VolumeIndicator     *string
 	CustomActivityID    *int
 	CustomActivityName  *string
 	VisitorCategory     VisitorCategory

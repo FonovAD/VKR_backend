@@ -3,7 +3,7 @@ package museum
 const (
 	createMuseumQuery = `
 		INSERT INTO museum (
-			id_owner, inn, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
+			organization_id, inn, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
 			is_memorial_reserve_museum, is_historical_memorial_reserve, is_art_museum,
 			is_museum_reserve, is_estate_museum, is_palace_park_ensemble,
 			is_historical_architectural_reserve, annual_visitor_capacity,
@@ -18,7 +18,7 @@ const (
 	// TODO: исправить костыль (убрал вывод inn)
 	getMuseumByIDQuery = `
 		SELECT
-			id, id_owner, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
+			id, organization_id, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
 			is_memorial_reserve_museum, is_historical_memorial_reserve, is_art_museum,
 			is_museum_reserve, is_estate_museum, is_palace_park_ensemble,
 			is_historical_architectural_reserve, annual_visitor_capacity,
@@ -29,7 +29,7 @@ const (
 
 	updateMuseumQuery = `
 		UPDATE museum SET
-			id_owner = :id_owner,
+			organization_id = :organization_id,
 			inn = :inn,
 			kpp = :kpp,
 			founder = :founder,
@@ -56,7 +56,7 @@ const (
 
 	findMuseumByINNQuery = `
 		SELECT
-			id, id_owner, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
+			id, organization_id, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
 			is_memorial_reserve_museum, is_historical_memorial_reserve, is_art_museum,
 			is_museum_reserve, is_estate_museum, is_palace_park_ensemble,
 			is_historical_architectural_reserve, annual_visitor_capacity,
@@ -67,18 +67,18 @@ const (
 
 	findMuseumsByOwnerQuery = `
 		SELECT
-			id, id_owner, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
+			id, organization_id, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
 			is_memorial_reserve_museum, is_historical_memorial_reserve, is_art_museum,
 			is_museum_reserve, is_estate_museum, is_palace_park_ensemble,
 			is_historical_architectural_reserve, annual_visitor_capacity,
 			internal_visitors_count, external_visitors_count,
 			is_valuable_cultural_heritage, valuable_museum_items_count
 		FROM museum
-		WHERE id_owner = $1`
+		WHERE organization_id = $1`
 
 	listMuseumsQuery = `
 		SELECT
-			id, id_owner, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
+			id, organization_id, kpp, founder, museum_activity_in_charter, name, museum_legal_status,
 			is_memorial_reserve_museum, is_historical_memorial_reserve, is_art_museum,
 			is_museum_reserve, is_estate_museum, is_palace_park_ensemble,
 			is_historical_architectural_reserve, annual_visitor_capacity,

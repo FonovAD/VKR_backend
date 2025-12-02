@@ -18,19 +18,6 @@ type activityRepository struct {
 	logger logger.Logger
 }
 
-type dbActivity struct {
-	ID                  *int64   `db:"id"`
-	IDOwner             int      `db:"id_owner"`
-	ActivityTypeID      *int     `db:"activity_type_id"`
-	CustomActivityID    *int     `db:"custom_activity_id"`
-	VisitorCategory     string   `db:"visitor_category"`
-	CostSharePercent    *float64 `db:"cost_share_percent"`
-	RevenueAmount       *float64 `db:"revenue_amount"`
-	TotalCount          *int64   `db:"total_count"`
-	StateTaskCount      *int64   `db:"state_task_count"`
-	RevenueActivityCount *int64  `db:"revenue_activity_count"`
-	Year                int16    `db:"year"`
-}
 
 func NewActivityRepository(db *sqlx.DB, logger logger.Logger) activity.Repository {
 	return &activityRepository{
@@ -40,33 +27,12 @@ func NewActivityRepository(db *sqlx.DB, logger logger.Logger) activity.Repositor
 }
 
 func (r *activityRepository) Create(ctx context.Context, activity *entity.Activity) error {
-	r.logger.LogInfo(fmt.Sprintf("activityRepository - Create - INN: %s, ActivityTypeID: %v, CustomActivityID: %v, Category: %s",
-		activity.INN, activity.ActivityTypeID, activity.CustomActivityID, activity.VisitorCategory), nil, nil)
+	r.logger.LogInfo(fmt.Sprintf("activityRepository - Create - INN: %s, ActivityTypeID: %v, Category: %s",
+		activity.INN, activity.ActivityTypeID, activity.VisitorCategory), nil, nil)
 
-	orgID, err := r.resolveOrganizationID(ctx, activity.INN)
-	if err != nil {
-		return err
-	}
-
-	dbModel := r.toDBActivity(activity, orgID)
-	var id int64
-	err = r.db.QueryRowxContext(ctx, createActivityQuery,
-		dbModel.IDOwner,
-		dbModel.ActivityTypeID,
-		dbModel.CustomActivityID,
-		dbModel.VisitorCategory,
-		dbModel.CostSharePercent,
-		dbModel.RevenueAmount,
-		dbModel.TotalCount,
-		dbModel.StateTaskCount,
-		dbModel.RevenueActivityCount,
-		dbModel.Year,
-	).Scan(&id)
-	if err != nil {
-		return err
-	}
-	activity.ID = &id
-	return nil
+	// TODO: нужно получать museum_id по INN через organization -> museum
+	// Пока возвращаем ошибку, так как нужно знать museum_id
+	return fmt.Errorf("museum_id is required for creating activity. Need to resolve museum_id from INN first")
 }
 
 func (r *activityRepository) GetByINN(ctx context.Context, inn string) ([]entity.Activity, error) {
@@ -109,6 +75,26 @@ func (r *activityRepository) GetByMuseumID(ctx context.Context, museumID entity.
 	return activities, nil
 }
 
+func (r *activityRepository) GetByOrganizationIDAndYear(ctx context.Context, organizationID int, year int16) ([]entity.Activity, error) {
+	r.logger.LogInfo(fmt.Sprintf("activityRepository - GetByOrganizationIDAndYear - orgID: %d, year: %d", organizationID, year), nil, nil)
+
+	var dbModels []model.Activity
+	err := r.db.SelectContext(ctx, &dbModels, getActivityByOrganizationIDAndYearQuery, organizationID, year)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return []entity.Activity{}, nil
+		}
+		r.logger.LogError(fmt.Sprintf("activityRepository - GetByOrganizationIDAndYear - orgID: %d, year: %d", organizationID, year), nil, err)
+		return nil, err
+	}
+
+	activities := make([]entity.Activity, len(dbModels))
+	for i, m := range dbModels {
+		activities[i] = r.toEntityActivity(&m)
+	}
+	return activities, nil
+}
+
 func (r *activityRepository) Update(ctx context.Context, activity *entity.Activity) error {
 	r.logger.LogInfo(fmt.Sprintf("activityRepository - Update - ID: %v", activity.ID), nil, nil)
 
@@ -116,8 +102,18 @@ func (r *activityRepository) Update(ctx context.Context, activity *entity.Activi
 		return fmt.Errorf("activity ID is required for update")
 	}
 
-	dbModel := r.toDBActivity(activity, int(activity.IDOwner))
-	dbModel.ID = activity.ID
+	dbModel := &model.Activity{
+		ID:                  activity.ID,
+		ActivityTypeID:      activity.ActivityTypeID,
+		VolumeIndicatorID:   nil, // TODO: нужно получать volume_indicator_id из VolumeIndicator
+		VisitorCategory:     string(activity.VisitorCategory),
+		CostSharePercent:    activity.CostSharePercent,
+		RevenueAmount:       activity.RevenueAmount,
+		TotalCount:          activity.TotalCount,
+		StateTaskCount:      activity.StateTaskCount,
+		RevenueActivityCount: activity.RevenueActivityCount,
+		Year:                activity.Year,
+	}
 	_, err := r.db.NamedExecContext(ctx, updateActivityQuery, dbModel)
 	return err
 }
@@ -164,32 +160,18 @@ func (r *activityRepository) List(ctx context.Context, params activity.ListParam
 	}, nil
 }
 
-// Маппинг в модель БД
-func (r *activityRepository) toDBActivity(a *entity.Activity, ownerID int) *dbActivity {
-	return &dbActivity{
-		IDOwner:              ownerID,
-		ActivityTypeID:       a.ActivityTypeID,
-		CustomActivityID:     a.CustomActivityID,
-		VisitorCategory:      string(a.VisitorCategory),
-		CostSharePercent:     a.CostSharePercent,
-		RevenueAmount:        a.RevenueAmount,
-		TotalCount:           a.TotalCount,
-		StateTaskCount:       a.StateTaskCount,
-		RevenueActivityCount: a.RevenueActivityCount,
-		Year:                 a.Year,
-	}
-}
 
 // Маппинг в доменную сущность
 func (r *activityRepository) toEntityActivity(m *model.Activity) entity.Activity {
 	return entity.Activity{
 		ID:                   m.ID,
-		IDOwner:              entity.OrganizationID(m.IDOwner),
-		INN:                  m.INN,
+		IDOwner:              0, // TODO: нужно получать organization_id через museum
+		INN:                  "", // TODO: нужно получать inn через museum
 		ActivityTypeID:      m.ActivityTypeID,
 		ActivityTypeName:     m.ActivityTypeName,
-		CustomActivityID:     m.CustomActivityID,
-		CustomActivityName:   m.CustomActivityName,
+		VolumeIndicator:      m.VolumeIndicatorName,
+		CustomActivityID:     nil,
+		CustomActivityName:   nil,
 		VisitorCategory:      entity.VisitorCategory(m.VisitorCategory),
 		CostSharePercent:     m.CostSharePercent,
 		RevenueAmount:        m.RevenueAmount,

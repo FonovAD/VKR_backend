@@ -20,3 +20,4 @@ type MuseumDetails struct {
 	IsValuableCulturalHeritage       bool
 	ValuableMuseumItemsCount         *int
 }
+

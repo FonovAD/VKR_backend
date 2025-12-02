@@ -2,12 +2,11 @@ package model
 
 type Activity struct {
 	ID                  *int64   `db:"id" json:"id"`
-	IDOwner             int      `db:"id_owner" json:"id_owner"`
-	INN                 string   `db:"inn" json:"inn"`
+	MuseumID            int      `db:"museum_id" json:"museum_id"`
 	ActivityTypeID      *int     `db:"activity_type_id" json:"activity_type_id,omitempty"`
 	ActivityTypeName    *string  `db:"activity_type_name" json:"activity_type_name,omitempty"`
-	CustomActivityID    *int     `db:"custom_activity_id" json:"custom_activity_id,omitempty"`
-	CustomActivityName  *string  `db:"custom_activity_name" json:"custom_activity_name,omitempty"`
+	VolumeIndicatorID   *int     `db:"volume_indicator_id" json:"volume_indicator_id,omitempty"`
+	VolumeIndicatorName *string  `db:"volume_indicator_name" json:"volume_indicator_name,omitempty"`
 	VisitorCategory     string   `db:"visitor_category" json:"visitor_category"`
 	CostSharePercent    *float64 `db:"cost_share_percent" json:"cost_share_percent,omitempty"`
 	RevenueAmount       *float64 `db:"revenue_amount" json:"revenue_amount,omitempty"`

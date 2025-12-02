@@ -18,3 +18,4 @@ type FinancialData struct {
 	TaxPayments                float64
 	OtherExpenses              float64
 }
+

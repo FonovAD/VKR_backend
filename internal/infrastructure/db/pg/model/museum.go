@@ -1,7 +1,7 @@
 package model
 
 type Museum struct {
-	IDOwner                          int     `db:"id_owner"`
+	OrganizationID                   int     `db:"organization_id"`
 	Id                               int     `db:"id"`
 	INN                              string  `db:"inn"`
 	KPP                              *string `db:"kpp"`

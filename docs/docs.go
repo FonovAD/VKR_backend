@@ -612,6 +612,223 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/form/labor/organization/{org_id}": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get labor form data by organization ID",
+                "description": "Returns data for labor resources form including staff counts and payroll (FOT) information.",
+                "parameters": [
+                    {
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Labor form data",
+                        "schema": {"$ref": "#/definitions/LaborFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid organization id",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
+        },
+        "/api/v1/form/labor/search/by-inn": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get labor form data by organization INN",
+                "description": "Returns data for labor resources form by organization INN.",
+                "parameters": [
+                    {
+                        "name": "inn",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Labor form data",
+                        "schema": {"$ref": "#/definitions/LaborFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid query parameter",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
+        },
+        "/api/v1/form/activities/organization/{org_id}": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get activities form data by organization ID and year",
+                "description": "Returns data for activities (volumes) form including all activity types with their volume indicators, costs, revenues, and counts.",
+                "parameters": [
+                    {
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Reporting year"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activities form data",
+                        "schema": {"$ref": "#/definitions/ActivitiesFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
+        },
+        "/api/v1/form/activities/search/by-inn": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get activities form data by organization INN and year",
+                "description": "Returns data for activities (volumes) form by organization INN and year.",
+                "parameters": [
+                    {
+                        "name": "inn",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Reporting year"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activities form data",
+                        "schema": {"$ref": "#/definitions/ActivitiesFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
+        },
+        "/api/v1/form/financial/organization/{org_id}": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get financial form data by organization ID and year",
+                "description": "Returns data for revenues and expenses form including all income sources and expense categories.",
+                "parameters": [
+                    {
+                        "name": "org_id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Reporting year"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Financial form data",
+                        "schema": {"$ref": "#/definitions/FinancialFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "404": {
+                        "description": "Financial data not found",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
+        },
+        "/api/v1/form/financial/search/by-inn": {
+            "get": {
+                "tags": ["Reporting Form"],
+                "summary": "Get financial form data by organization INN and year",
+                "description": "Returns data for revenues and expenses form by organization INN and year.",
+                "parameters": [
+                    {
+                        "name": "inn",
+                        "in": "query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Reporting year"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Financial form data",
+                        "schema": {"$ref": "#/definitions/FinancialFormData"}
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "404": {
+                        "description": "Financial data not found",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {"$ref": "#/definitions/ErrorResponse"}
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -623,6 +840,7 @@ const docTemplate = `{
                 "INN": {"type": "string"},
                 "ActivityTypeID": {"type": "integer", "format": "int64"},
                 "ActivityTypeName": {"type": "string"},
+                "VolumeIndicator": {"type": "string", "description": "Volume indicator for the activity type"},
                 "CustomActivityID": {"type": "integer", "format": "int64"},
                 "CustomActivityName": {"type": "string"},
                 "VisitorCategory": {"type": "string", "enum": ["internal","external"]},
@@ -834,6 +1052,67 @@ const docTemplate = `{
                 "page_size": {"type": "integer", "format": "int32", "description": "Number of items per page"},
                 "total_count": {"type": "integer", "format": "int64", "description": "Total number of items"},
                 "total_pages": {"type": "integer", "format": "int32", "description": "Total number of pages"}
+            }
+        },
+        "LaborFormData": {
+            "type": "object",
+            "properties": {
+                "year": {"type": "integer", "format": "int32", "description": "Reporting year"},
+                "labor_data": {"$ref": "#/definitions/LaborResponse"}
+            }
+        },
+        "ActivitiesFormData": {
+            "type": "object",
+            "properties": {
+                "year": {"type": "integer", "format": "int32", "description": "Reporting year"},
+                "activities": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/ActivityFormItem"}
+                }
+            }
+        },
+        "ActivityFormItem": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "format": "int64"},
+                "activity_type_id": {"type": "integer", "format": "int64"},
+                "activity_type_name": {"type": "string"},
+                "volume_indicator": {"type": "string", "description": "Volume indicator for the activity type"},
+                "custom_activity_id": {"type": "integer", "format": "int64"},
+                "custom_activity_name": {"type": "string"},
+                "cost_share_percent": {"type": "number", "format": "float", "description": "Cost share percentage"},
+                "revenue_amount": {"type": "number", "format": "float", "description": "Revenue amount in rubles"},
+                "visitor_category": {"type": "string", "enum": ["internal", "external"]},
+                "total_count": {"type": "integer", "format": "int64", "description": "Total count"},
+                "state_task_count": {"type": "integer", "format": "int64", "description": "State task count"},
+                "revenue_activity_count": {"type": "integer", "format": "int64", "description": "Revenue activity count"}
+            }
+        },
+        "FinancialFormData": {
+            "type": "object",
+            "properties": {
+                "year": {"type": "integer", "format": "int32", "description": "Reporting year"},
+                "financial": {"$ref": "#/definitions/FinancialData"}
+            }
+        },
+        "FinancialData": {
+            "type": "object",
+            "properties": {
+                "total_revenue": {"type": "number", "format": "float", "description": "Total revenue in rubles"},
+                "state_assignment_subsidy": {"type": "number", "format": "float", "description": "State assignment subsidy in rubles"},
+                "earned_revenue": {"type": "number", "format": "float", "description": "Earned revenue in rubles"},
+                "other_funding_sources": {"type": "number", "format": "float", "description": "Other funding sources in rubles"},
+                "total_expenses": {"type": "number", "format": "float", "description": "Total expenses in rubles"},
+                "inventory_assets_acquisition": {"type": "number", "format": "float", "description": "Inventory assets acquisition in rubles"},
+                "utility_services": {"type": "number", "format": "float", "description": "Utility services in rubles"},
+                "communication_services": {"type": "number", "format": "float", "description": "Communication services in rubles"},
+                "transportation_services": {"type": "number", "format": "float", "description": "Transportation services in rubles"},
+                "valuable_assets_acquisition": {"type": "number", "format": "float", "description": "Valuable assets acquisition in rubles"},
+                "real_estate_maintenance": {"type": "number", "format": "float", "description": "Real estate maintenance in rubles"},
+                "valuable_assets_maintenance": {"type": "number", "format": "float", "description": "Valuable assets maintenance in rubles"},
+                "general_administrative_costs": {"type": "number", "format": "float", "description": "General administrative costs in rubles"},
+                "tax_payments": {"type": "number", "format": "float", "description": "Tax payments in rubles"},
+                "other_expenses": {"type": "number", "format": "float", "description": "Other expenses in rubles"}
             }
         }
     }

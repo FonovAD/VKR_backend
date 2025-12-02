@@ -31,7 +31,7 @@ func (r *museumRepository) Create(ctx context.Context, museum *entity.Museum) er
 	dbModel := r.toDB(museum)
 	var id int
 	err := r.db.QueryRowxContext(ctx, createMuseumQuery,
-		dbModel.IDOwner,
+		dbModel.OrganizationID,
 		dbModel.INN,
 		dbModel.KPP,
 		dbModel.Founder,

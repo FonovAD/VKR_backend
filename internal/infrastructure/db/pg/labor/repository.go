@@ -37,14 +37,22 @@ func (r *repository) GetByOrganizationID(ctx context.Context, organizationID int
 		return value.LaborData{}, err
 	}
 
+	// Вспомогательная функция для получения значения или 0.0 если nil
+	getFloatValue := func(v *float64) float64 {
+		if v == nil {
+			return 0.0
+		}
+		return *v
+	}
+
 	laborData := value.LaborData{
-		TotalStaffAnnual:             laborModel.TotalStaffAnnual,
-		ResearchStaffInternal:        laborModel.ResearchStaffInternal,
-		CoreOperationalStaffInternal: laborModel.CoreOperationalStaffInternal,
-		AdminSupportStaffInternal:    laborModel.AdminSupportStaffInternal,
-		ResearchStaffExternal:        laborModel.ResearchStaffExternal,
-		CoreOperationalStaffExternal: laborModel.CoreOperationalStaffExternal,
-		AdminSupportStaffExternal:    laborModel.AdminSupportStaffExternal,
+		TotalStaffAnnual:             getFloatValue(laborModel.TotalStaffAnnual),
+		ResearchStaffInternal:        getFloatValue(laborModel.ResearchStaffInternal),
+		CoreOperationalStaffInternal: getFloatValue(laborModel.CoreOperationalStaffInternal),
+		AdminSupportStaffInternal:    getFloatValue(laborModel.AdminSupportStaffInternal),
+		ResearchStaffExternal:        getFloatValue(laborModel.ResearchStaffExternal),
+		CoreOperationalStaffExternal: getFloatValue(laborModel.CoreOperationalStaffExternal),
+		AdminSupportStaffExternal:    getFloatValue(laborModel.AdminSupportStaffExternal),
 	}
 
 	var fotModel model.LaborResourcesFOT
@@ -54,13 +62,13 @@ func (r *repository) GetByOrganizationID(ctx context.Context, organizationID int
 		}
 	} else {
 		laborData.FOT = value.LaborFOT{
-			TotalStaffAnnual:             fotModel.TotalStaffAnnual,
-			ResearchStaffInternal:        fotModel.ResearchStaffInternal,
-			CoreOperationalStaffInternal: fotModel.CoreOperationalStaffInternal,
-			AdminSupportStaffInternal:    fotModel.AdminSupportStaffInternal,
-			ResearchStaffExternal:        fotModel.ResearchStaffExternal,
-			CoreOperationalStaffExternal: fotModel.CoreOperationalStaffExternal,
-			AdminSupportStaffExternal:    fotModel.AdminSupportStaffExternal,
+			TotalStaffAnnual:             getFloatValue(fotModel.TotalStaffAnnual),
+			ResearchStaffInternal:        getFloatValue(fotModel.ResearchStaffInternal),
+			CoreOperationalStaffInternal: getFloatValue(fotModel.CoreOperationalStaffInternal),
+			AdminSupportStaffInternal:    getFloatValue(fotModel.AdminSupportStaffInternal),
+			ResearchStaffExternal:        getFloatValue(fotModel.ResearchStaffExternal),
+			CoreOperationalStaffExternal: getFloatValue(fotModel.CoreOperationalStaffExternal),
+			AdminSupportStaffExternal:    getFloatValue(fotModel.AdminSupportStaffExternal),
 		}
 	}
 
@@ -68,16 +76,50 @@ func (r *repository) GetByOrganizationID(ctx context.Context, organizationID int
 }
 
 func (r *repository) GetByOrganizationINN(ctx context.Context, inn string) (value.LaborData, error) {
-	var org struct {
-		ID int `db:"id"`
-	}
+	r.logger.LogInfo(fmt.Sprintf("laborRepository - GetByOrganizationINN - %s", inn), nil, nil)
 
-	if err := r.db.GetContext(ctx, &org, getOrganizationByINNQuery, inn); err != nil {
+	var laborModel model.LaborResources
+	if err := r.db.GetContext(ctx, &laborModel, getLaborResourcesByINNQuery, inn); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return value.LaborData{}, sql.ErrNoRows
 		}
 		return value.LaborData{}, err
 	}
 
-	return r.GetByOrganizationID(ctx, org.ID)
+	// Вспомогательная функция для получения значения или 0.0 если nil
+	getFloatValue := func(v *float64) float64 {
+		if v == nil {
+			return 0.0
+		}
+		return *v
+	}
+
+	laborData := value.LaborData{
+		TotalStaffAnnual:             getFloatValue(laborModel.TotalStaffAnnual),
+		ResearchStaffInternal:        getFloatValue(laborModel.ResearchStaffInternal),
+		CoreOperationalStaffInternal: getFloatValue(laborModel.CoreOperationalStaffInternal),
+		AdminSupportStaffInternal:    getFloatValue(laborModel.AdminSupportStaffInternal),
+		ResearchStaffExternal:        getFloatValue(laborModel.ResearchStaffExternal),
+		CoreOperationalStaffExternal: getFloatValue(laborModel.CoreOperationalStaffExternal),
+		AdminSupportStaffExternal:    getFloatValue(laborModel.AdminSupportStaffExternal),
+	}
+
+	var fotModel model.LaborResourcesFOT
+	if err := r.db.GetContext(ctx, &fotModel, getLaborFotByLaborIDQuery, laborModel.ID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return value.LaborData{}, err
+		}
+	} else {
+		laborData.FOT = value.LaborFOT{
+			TotalStaffAnnual:             getFloatValue(fotModel.TotalStaffAnnual),
+			ResearchStaffInternal:        getFloatValue(fotModel.ResearchStaffInternal),
+			CoreOperationalStaffInternal: getFloatValue(fotModel.CoreOperationalStaffInternal),
+			AdminSupportStaffInternal:    getFloatValue(fotModel.AdminSupportStaffInternal),
+			ResearchStaffExternal:        getFloatValue(fotModel.ResearchStaffExternal),
+			CoreOperationalStaffExternal: getFloatValue(fotModel.CoreOperationalStaffExternal),
+			AdminSupportStaffExternal:    getFloatValue(fotModel.AdminSupportStaffExternal),
+		}
+	}
+
+	return laborData, nil
 }

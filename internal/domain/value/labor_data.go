@@ -21,3 +21,4 @@ type LaborFOT struct {
 	CoreOperationalStaffExternal float64
 	AdminSupportStaffExternal    float64
 }
+

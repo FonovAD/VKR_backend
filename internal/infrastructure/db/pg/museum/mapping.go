@@ -7,7 +7,7 @@ import (
 
 func (r *museumRepository) toDB(m *entity.Museum) *model.Museum {
 	return &model.Museum{
-		IDOwner:                          int(m.IdOwner),
+		OrganizationID:                   int(m.IdOwner),
 		Id:                               int(m.Id),
 		INN:                              m.INN,
 		KPP:                              m.KPP,
@@ -32,7 +32,7 @@ func (r *museumRepository) toDB(m *entity.Museum) *model.Museum {
 
 func (r *museumRepository) toEntity(dbModel *model.Museum) *entity.Museum {
 	return &entity.Museum{
-		IdOwner:                          entity.OrganizationID(dbModel.IDOwner),
+		IdOwner:                          entity.OrganizationID(dbModel.OrganizationID),
 		Id:                               entity.MuseumID(dbModel.Id),
 		INN:                              dbModel.INN,
 		KPP:                              dbModel.KPP,
